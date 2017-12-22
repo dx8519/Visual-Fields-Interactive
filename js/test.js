@@ -63,7 +63,7 @@ function FieldPath (yPoints, zPoints) {
     var zPointsOffset = this.zPoints.map(n => n + zOffset);
     var material = new THREE.LineBasicMaterial({
       color: color,
-      linewidth: 1,
+      linewidth: 3,
       linecap: "round",
       linejoin: "round",
     });
@@ -145,7 +145,10 @@ function animate() {
 // RAYCASTER ------------------------------------------------------------------
 
 var raycaster = new THREE.Raycaster();
+<<<<<<< HEAD
 console.log(raycaster.linePrecision);
+=======
+>>>>>>> origin/master
 raycaster.linePrecision = 0.05;
 var mouse = new THREE.Vector2();
 function onMouseMove( event ) {
