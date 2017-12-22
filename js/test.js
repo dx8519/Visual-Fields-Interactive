@@ -50,7 +50,7 @@ function FieldPath (yPoints, zPoints) {
     // TODO Assign each line a unique colour
     var material = new THREE.LineBasicMaterial({ color: 0x0000ff });
     var geometry = new THREE.Geometry();
-    for (i=0; i<this.numPoints; i++) {
+    for (var i=0; i<this.numPoints; i++) {
       var xc = this.xPoints[i];
       var yc = this.yPoints[i];
       var zc = this.zPoints[i];
@@ -92,22 +92,14 @@ for (i=0; i<switchList.length; i++) {
   switchList[i].switchSide();
 }
 
+
 // RENDER LINES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
 var parent = new THREE.Object3D();
-for (i=0; i<8; i++) {
+for (var i=0; i<8; i++) {
   fieldList[i].renderPath(parent);
 }
 
-// WHY does this work and not the above loop?
-fieldList[0].renderPath(parent);
-fieldList[1].renderPath(parent);
-fieldList[2].renderPath(parent);
-fieldList[3].renderPath(parent);
-fieldList[4].renderPath(parent);
-fieldList[5].renderPath(parent);
-fieldList[6].renderPath(parent);
-fieldList[7].renderPath(parent);
 
 scene.add(parent);
 
