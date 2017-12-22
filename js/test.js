@@ -26,8 +26,42 @@ var colorCenterLine = "0x444444"
 var colorGrid = "0x000000"
 
 var gridHelper = new THREE.GridHelper( size, divisions, "red", "gainsboro");
-//scene.add( gridHelper );
+scene.add( gridHelper );
 
+// OUTPUT FIELD CONSTRUCTOR
+function OutputField(xPos, yPos, zPos) {
+  var geometry = new THREE.PlaneGeometry( 2, 2, 32 );
+  var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+
+  this.plane = new THREE.Mesh( geometry, material );
+  this.plane.rotation.set(0, Math.PI/2, 0)
+  this.plane.position.x = xPos;
+  this.plane.position.y = yPos;
+  this.plane.position.z = zPos;
+  this.renderField = renderField;
+  function renderField(parent) {
+    parent.add(this.plane);
+  }
+}
+
+
+
+var oLLU = new OutputField(-3,1,6);
+var oLRU = new OutputField(-3,1,4);
+var oLLL = new OutputField(-3,-1,6);
+var oLRL = new OutputField(-3,-1,4);
+var oRLU = new OutputField(-3,1,-6);
+var oRRU = new OutputField(-3,1,-4);
+var oRLL = new OutputField(-3,-1,-6);
+var oRRL = new OutputField(-3,-1,-4);
+
+
+
+
+var outputList = [oLLU, oLRU, oLLL, oLRL, oRLU, oRRU, oRLL, oRRL];
+for(var i = 0; i<outputList.length; i++) {
+  outputList[i].renderField(scene);
+}
 
 // VISUAL FIELD PATH CONSTRUCTOR ---------------------------------------------
 function FieldPath (yPoints, zPoints) {
