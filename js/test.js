@@ -46,9 +46,8 @@ function FieldPath (yPoints, zPoints) {
     }
   }
 
-  function renderPath(parent) {
-    // TODO Assign each line a unique colour
-    var material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+  function renderPath(parent, color) {
+    var material = new THREE.LineBasicMaterial({ color: color });
     var geometry = new THREE.Geometry();
     for (i=0; i<this.numPoints; i++) {
       var xc = this.xPoints[i];
@@ -64,7 +63,7 @@ function FieldPath (yPoints, zPoints) {
 
 
 // Initialise generic paths
-var yRU = [1, -1, 0, 0, 0, 4, 0];
+var yRU = [1, -1, 0, 0, 0, -4, 0];
 var zRU = [6, 4, 5, 0, -5, -5, -2];
 
 var yRL = [-1, 1, 0, 0, 0, 4, 0];
@@ -90,6 +89,12 @@ var vLLL = new FieldPath (yLL, zLL);
 var switchList = [vLRU, vLRL, vLLU, vLLL];
 for (i=0; i<switchList.length; i++) {
   switchList[i].switchSide();
+}
+
+// Generate colours
+var colorList = [];
+for (i=0; i<8; i++) {
+  var r =
 }
 
 // RENDER LINES
