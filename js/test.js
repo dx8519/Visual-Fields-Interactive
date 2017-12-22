@@ -119,28 +119,10 @@ colorList.push("lightsalmon", "crimson", "sienna", "hotpink");
 
 // RENDER LINES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
-var parent = new THREE.Object3D();
 for (var i=0; i<8; i++) {
   var zOffset = (i-4) / 10;
   fieldList[i].renderPath(scene, new THREE.Color(colorList[i]), zOffset);
 }
-
-//scene.add(parent);
-
-
-// RENDER AND ANIMATE ----------------------------------------------------------
-function animate() {
-
-  requestAnimationFrame( animate );
-
-  // required if controls.enableDamping or controls.autoRotate are set to true
-  controls.update();
-
-  render( scene, camera );
-
-}
-
-//animate();
 
 // RAYCASTER ------------------------------------------------------------------
 
@@ -181,15 +163,27 @@ function render() {
 
 }
 
-// function animate() {
-//   requestAnimationFrame( animate );
-//   render();
-// }
+
+// EVENT LISTENERS
+window.addEventListener( 'mousemove', onMouseMove, false);
+window.addEventListener( 'click', onClick, false);
+
+
+// RENDER AND ANIMATE ----------------------------------------------------------
+function animate() {
+
+  requestAnimationFrame( animate );
+
+  // required if controls.enableDamping or controls.autoRotate are set to true
+  controls.update();
+
+  render( scene, camera );
+
+}
 
 animate()
 
-//window.requestAnimationFrame(render);
-window.addEventListener( 'mousemove', onMouseMove, false);
+
 
 
 
