@@ -119,15 +119,16 @@ colorList.push("lightsalmon", "crimson", "sienna", "hotpink");
 
 // RENDER LINES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
+parent = new THREE.Object3D();
 for (var i=0; i<8; i++) {
   var zOffset = (i-4) / 10;
-  fieldList[i].renderPath(scene, new THREE.Color(colorList[i]), zOffset);
+  fieldList[i].renderPath(parent, new THREE.Color(colorList[i]), zOffset);
 }
+scene.add(parent);
 
 // RAYCASTER ------------------------------------------------------------------
 
 var raycaster = new THREE.Raycaster();
-console.log(raycaster.linePrecision);
 raycaster.linePrecision = 0.05;
 var mouse = new THREE.Vector2();
 function onMouseMove( event ) {
@@ -139,6 +140,7 @@ function onMouseMove( event ) {
 var geometry = new THREE.SphereGeometry( 1, 32, 32 );
 var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
 var sphere = new THREE.Mesh( geometry, material );
+sphere.visible=false;
 scene.add( sphere );
 var changed = []
 
@@ -148,7 +150,7 @@ function render() {
 	raycaster.setFromCamera( mouse, camera );
 
 	// calculate objects intersecting the picking ray
-	var intersects = raycaster.intersectObjects( scene.children );
+	var intersects = raycaster.intersectObjects( parent.children );
 
  for(i = 0; i<changed.length;i++) {
     if (!(changed[i] in intersects)) {
@@ -156,15 +158,17 @@ function render() {
       changed.splice(i, 1);
     }
   }
-	for ( var i = 0; i < intersects.length; i++ ) {
 
-		intersects[ i ].object.material.linewidth = 6;
-    console.log(sphere.position.z);
-    console.log(i);
-    sphere.position.copy(intersects[ i ].point);
-    changed.push(intersects[i]);
-
-	}
+  if (intersects.length == 0) {
+    sphere.visible = false;
+  } else {
+    for ( var i = 0; i < intersects.length; i++ ) {
+      intersects[ i ].object.material.linewidth = 6;
+      sphere.position.copy(intersects[ i ].point);
+      changed.push(intersects[i]);
+      sphere.visible = true;
+    }
+  }
 
 	renderer.render( scene, camera );
 
@@ -174,6 +178,19 @@ function render() {
 // EVENT LISTENERS
 window.addEventListener( 'mousemove', onMouseMove, false);
 window.addEventListener( 'click', onClick, false);
+
+var selectLines = []
+function onClick( event ) {
+  if (sphere.visible = true) {
+    selectLines = changed;
+    var sph_geometry = new THREE.SphereGeometry(1, 32, 32);
+    var sph_material = new THREE.MeshBasicMaterial( {color:0xffff00});
+    var selectSphere = new THREE.Mesh( geometry, material );
+    selectSphere.position.copy(sphere.position);
+    scene.add(selectSphere);
+  }
+
+}
 
 
 // RENDER AND ANIMATE ----------------------------------------------------------
