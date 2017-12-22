@@ -1,4 +1,9 @@
-// TODO Divide into init, create, update and animate functions
+// TODO Refactor. Some improvements include:
+// - Separating code into different files
+// - Make ALL parameters into variables
+// - Make VisualField objects hold an attribute - an OutputField object
+// ( this would be a huge improvement to the current hack implementation... )
+
 
 // General three.js setup
 
@@ -8,7 +13,7 @@
 var scene = new THREE.Scene();
 
 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
-camera.position.set(30, 10, 0);
+camera.position.set(40, 10, 0);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 var renderer = new THREE.WebGLRenderer({alpha: true});
@@ -47,8 +52,6 @@ function OutputField(xPos, yPos, zPos) {
     parent.add(this.plane);
   }
 }
-
-
 
 var oLLU = new OutputField(-3,1,6);
 var oLRU = new OutputField(-3,1,4);
@@ -133,17 +136,17 @@ function FieldPath (name, yPoints, zPoints) {
 
 // CREATE VISUAL FIELD PATHS ------------------------------------------------
 // Initialise generic paths
-var yRU = [1, -1, 0, 0, 0, -4, 0];
-var zRU = [6, 4, 5, 0, -5, -5, -2];
+var yRU = [1, -1, 0, 0, 0, 0, 0, 0, 0, -4, 0];
+var zRU = [6, 4, 5, 5, 5, 0, -5, -5, -5, -5, -2];
 
-var yRL = [-1, 1, 0, 0, 0, 4, 0];
-var zRL = [6, 4, 5, 0, -5, -5, -2];
+var yRL = [-1, 1, 0, 0, 0, 0, 0, 0, 0, 4, 0];
+var zRL = [6, 4, 5, 5, 5, 0, -5, -5, -5, -5, -2];
 
 var yLU = yRU;
-var zLU = [4, 6, 5, 5, 5, 5, 2];
+var zLU = [4, 6, 5, 5, 5, 1, 5, 5, 5, 5, 2];
 
 var yLL = yRL;
-var zLL = [4, 6, 5, 5, 5, 5, 2];
+var zLL = [4, 6, 5, 5, 5, 1, 5, 5, 5, 5, 2];
 
 // Create visual field objects
 var vRRU = new FieldPath ("RRU", yRU, zRU);
@@ -167,7 +170,7 @@ colorList.push("lightgreen", "lightseagreen", "lightskyblue", "mediumpurple");
 colorList.push("lightsalmon", "crimson", "sienna", "hotpink");
 // TODO: Figure out a good way to get colors automatically
 
-var offsetScale = 30;
+var offsetScale = 40;
 
 // RENDER LINES BASES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
@@ -190,50 +193,13 @@ scene.add(lights);
 // RAYCASTER ------------------------------------------------------------------
 
 var raycaster = new THREE.Raycaster();
-raycaster.linePrecision = 0.2;
+raycaster.linePrecision = 0.4;
 var mouse = new THREE.Vector2();
 
 function onMouseMove( event ) {
   event.preventDefault();
 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-}
-
-var geometry = new THREE.SphereGeometry( 0.5, 32, 32 );
-var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-var sphere = new THREE.Mesh( geometry, material );
-sphere.visible=false;
-scene.add( sphere );
-var changed = []
-
-function render() {
-
-	// update the picking ray with the camera and mouse position
-	raycaster.setFromCamera( mouse, camera );
-
-	// calculate objects intersecting the picking ray
-	var intersects = raycaster.intersectObjects( lights.children );
-
- for(i = 0; i<changed.length;i++) {
-    if (!(changed[i] in intersects)) {
-      changed[i].object.material.linewidth = 2
-      changed.splice(i, 1);
-    }
-  }
-
-  if (intersects.length == 0) {
-    sphere.visible = false;
-  } else {
-    for ( var i = 0; i < intersects.length; i++ ) {
-      intersects[ i ].object.material.linewidth = 6;
-      sphere.position.copy(intersects[ i ].point);
-      changed.push(intersects[i]);
-      sphere.visible = true;
-    }
-  }
-
-	renderer.render( scene, camera );
-
 }
 
 
@@ -253,7 +219,7 @@ function onWindowResize(){
 }
 
 
-// ON RIGHT CLICK CLICK LISTENER
+// ON DBL CLICK CLICK LISTENER
 var sph_geometry = new THREE.SphereGeometry(0.5, 32, 32);
 var sph_material = new THREE.MeshBasicMaterial( {color:0xff0000});
 var selectSphere = new THREE.Mesh( sph_geometry, sph_material );
@@ -315,8 +281,127 @@ function onDblClick( event ) {
 
 }
 
+// ADD LABELS
+
+var lineParent = new THREE.Object3D();
+var textParent = new THREE.Object3D();
+var loader = new THREE.FontLoader();
+
+function addLabel(text, coordinate, lineParent, textParent) {
+  var sph_geometry = new THREE.SphereGeometry(0.05, 32, 32);
+  var sph_material = new THREE.MeshBasicMaterial( {color:0x777777});
+  var dotPoint = new THREE.Mesh(sph_geometry, sph_material)
+  dotPoint.position.copy(coordinate)
+
+  var endPoint = dotPoint.clone();
+  var endCoord = coordinate.clone();
+  var offset = 1;
+  endCoord.add(new THREE.Vector3(0, offset, -offset));
+  endPoint.position.copy(endCoord);
+
+  var ln_geometry = new THREE.Geometry();
+  var ln_material = new THREE.LineBasicMaterial({color:0x777777});
+  ln_geometry.vertices.push(coordinate);
+  ln_geometry.vertices.push(endCoord);
+  var labelLine = new THREE.Line(ln_geometry, ln_material);
+
+  loader.load( 'fonts/M+_1m_medium_Regular.json', function ( font ) {
+    var txtGeometry = new THREE.TextGeometry(text, {
+      font: font,
+      size: 0.3,
+      height: 0.01,
+    } );
+    var txtMaterial = new THREE.MeshBasicMaterial({color:0x555555});
+    var txtObj = new THREE.Mesh(txtGeometry, txtMaterial);
+    var txtCoord = endCoord.clone();
+    txtCoord.add(new THREE.Vector3(0, -0.1, -0.15));
+    txtObj.position.copy(txtCoord);
+    txtObj.rotation.set(0, Math.PI/2, 0);
+    textParent.add(txtObj);
+  } );
+
+  lineParent.add(dotPoint);
+  lineParent.add(endPoint);
+  lineParent.add(labelLine);
+
+}
+
+// Adding labels
+var labels = {
+  "visual fields": [-3, 2, -7],
+  "lens": [1, 0, -5],
+  "retina": [4, 0, -5],
+  "optic nerve": [6, 0, -5],
+  "optic chiasm": [10, 0, 0],
+  "optic radiation": [14, 0, -5],
+  "baum's loop": [18, 4, -5],
+  "meyer's loop": [18, -4, -5],
+  "visual cortex": [20, 0, -2]
+};
+
+for (var entry in labels) {
+  var x = labels[entry][0];
+  var y = labels[entry][1];
+  var z = labels[entry][2];
+  addLabel(entry, new THREE.Vector3(x, y, z), lineParent, textParent);
+}
+
+scene.add(lineParent);
+scene.add(textParent);
 
 // RENDER AND ANIMATE ----------------------------------------------------------
+var geometry = new THREE.SphereGeometry( 0.5, 32, 32 );
+var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+var sphere = new THREE.Mesh( geometry, material );
+sphere.visible=false;
+scene.add( sphere );
+var changed = []
+
+var frameCount = 0;
+function render() {
+
+	// update the picking ray with the camera and mouse position
+	raycaster.setFromCamera( mouse, camera );
+
+	// calculate objects intersecting the picking ray
+	var intersects = raycaster.intersectObjects( lights.children );
+
+ for(i = 0; i<changed.length;i++) {
+    if (!(changed[i] in intersects)) {
+      changed[i].object.material.linewidth = 2
+      changed.splice(i, 1);
+    }
+  }
+
+  if (intersects.length == 0) {
+    sphere.visible = false;
+  } else {
+    for ( var i = 0; i < intersects.length; i++ ) {
+      intersects[ i ].object.material.linewidth = 6;
+      sphere.position.copy(intersects[ i ].point);
+      changed.push(intersects[i]);
+      sphere.visible = true;
+    }
+  }
+
+  frameCount += 1;
+  if (frameCount > 200) {
+    frameCount = 0;
+  }
+  var dy = Math.cos((Math.PI)*(frameCount / 100)) / 1000;
+
+  // Bounce Labels
+  for (var i = 0; i<textParent.children.length; i++) {
+    textParent.children[i].position.y += dy;
+  }
+
+
+	renderer.render( scene, camera );
+
+}
+
+
+
 function animate() {
 
   requestAnimationFrame( animate );
