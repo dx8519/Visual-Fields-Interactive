@@ -12,6 +12,10 @@ camera.position.set(30, 10, 0);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 var renderer = new THREE.WebGLRenderer({alpha: true});
+// Size is coded here for  css width of 50%
+//containerWidth = window.innerWidth/2;
+//containerHeight = window.innerHeight/2;
+//renderer.setSize( containerWidth, containerHeight );
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setClearColor( 0xffffff, 0 );
 document.body.appendChild( renderer.domElement );
@@ -26,7 +30,7 @@ var colorCenterLine = "0x444444"
 var colorGrid = "0x000000"
 
 var gridHelper = new THREE.GridHelper( size, divisions, "red", "gainsboro");
-scene.add( gridHelper );
+//scene.add( gridHelper );
 
 // OUTPUT FIELD CONSTRUCTOR -------------------------------------------------------
 function OutputField(xPos, yPos, zPos) {
@@ -163,11 +167,13 @@ colorList.push("lightgreen", "lightseagreen", "lightskyblue", "mediumpurple");
 colorList.push("lightsalmon", "crimson", "sienna", "hotpink");
 // TODO: Figure out a good way to get colors automatically
 
+var offsetScale = 30;
+
 // RENDER LINES BASES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
 parent = new THREE.Object3D();
 for (var i=0; i<8; i++) {
-  var zOffset = (i-4) / 20;
+  var zOffset = (i-4) / offsetScale;
   fieldList[i].renderPath(parent, new THREE.Color(colorList[i]), zOffset);
 }
 scene.add(parent);
@@ -175,7 +181,7 @@ scene.add(parent);
 // RENDER LINE Lights
 lights = new THREE.Object3D();
 for (var i=0; i<8; i++) {
-  var zOffset = (i-4) / 20;
+  var zOffset = (i-4) / offsetScale;
   fieldList[i].changeToDash();
   fieldList[i].renderPath(lights, new THREE.Color("yellow"), zOffset);
 }

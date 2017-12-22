@@ -1,9 +1,15 @@
-/* body {
+body {
     background-color: #fefefe;
     font-size: 13px;
     font-family: "Lucida Sans Typewriter", "Lucida Console", Monaco, "Bitstream Vera Sans Mono", monospace;
     sans-serif;
-    width: 50%;
-    margin: 4% auto;
+    overflow: hidden;
 }
- */
+
+#hover {
+    position: absolute;
+    padding: 4% 25%;
+    width: 50%;
+    text-align: center;
+}
+
