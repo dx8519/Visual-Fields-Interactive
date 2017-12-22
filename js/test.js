@@ -20,19 +20,20 @@ controls.update();
 
 // VISUAL FIELD PATH CONSTRUCTOR
 function FieldPath (yPoints, zPoints) {
-    this.xPoints = [];       // anterior-posterior
-    this.yPoints = yPoints;  // superior-inferior
-    this.zPoints = zPoints; //lateral-medial
-    this.side = "right";
-    // Need to assert yPoints.length = zPoints.length
-    this.numPoints = yPoints.length
-    this.switchSide = switchSide;
-    this.renderPath = renderPath;
+  this.xPoints = [];       // anterior-posterior
+  this.yPoints = yPoints;  // superior-inferior
+  this.zPoints = zPoints; //lateral-medial
 
-    // Initialise xPoints with integers from 0 to numLength
-    for (i=0; i<this.numPoints; i++) {
-      this.xPoints.push(2*i);
-    }
+  this.side = "right";
+  // Need to assert yPoints.length = zPoints.length
+  this.numPoints = yPoints.length
+  this.switchSide = switchSide;
+  this.renderPath = renderPath;
+
+  // Initialise xPoints with integers from 0 to numLength
+  for (var i=0; i<this.numPoints; i++) {
+    this.xPoints.push(2*i);
+  }
 
   function switchSide() {
     this.zPoints = this.zPoints.map(n => n * (-1));
@@ -46,15 +47,23 @@ function FieldPath (yPoints, zPoints) {
     }
   }
 
-  function renderPath(parent, color) {
-    var material = new THREE.LineBasicMaterial({ color: color });
+  function renderPath(parent, color, zOffset) {
+    // zOffset to show all lines without superimposition
+    var zPointsOffset = this.zPoints.map(n => n + zOffset);
+    var material = new THREE.LineBasicMaterial({
+      color: color,
+      linewidth: 3,
+      linecap: "round",
+      linejoin: "round",
+    });
     var geometry = new THREE.Geometry();
-    for (i=0; i<this.numPoints; i++) {
+    for (var i=0; i<this.numPoints; i++) {
       var xc = this.xPoints[i];
       var yc = this.yPoints[i];
-      var zc = this.zPoints[i];
+      var zc = zPointsOffset[i];
       geometry.vertices.push(new THREE.Vector3(xc, yc, zc));
     }
+    geometry.computeLineDistances();
     var line = new THREE.Line(geometry, material);
     parent.add(line);
   }
@@ -86,33 +95,38 @@ var vLRL = new FieldPath (yRL, zRL);
 var vLLU = new FieldPath (yLU, zLU);
 var vLLL = new FieldPath (yLL, zLL);
 // Objects apparently passed by reference so this should work...
-var switchList = [vLRU, vLRL, vLLU, vLLL];
-for (i=0; i<switchList.length; i++) {
+var switchList = [vLLU, vLLL, vLRU, vLRL];
+for (var i=0; i<switchList.length; i++) {
   switchList[i].switchSide();
 }
 
 // Generate colours
 var colorList = [];
-for (i=0; i<8; i++) {
-  var r =
-}
+colorList.push("lightgreen", "lightseagreen", "lightskyblue", "mediumpurple");
+colorList.push("lightsalmon", "crimson", "sienna", "hotpink");
+// TODO: Figure out a good way to get colors automatically
+// for (var i=0; i<8; i++) {
+//   var rprop = 0.1 + (i%2);
+//   var gprop = 0.1 + (Math.floor(i/4));
+//   var bprop = 0.1 + (Math.floor((i/2)%2));
+//   var sum = 2 * (rprop + gprop + bprop);
+//   rprop = (rprop/sum);
+//   gprop = (gprop/sum);
+//   bprop = (bprop/sum);
+//   var color = new THREE.Color(rprop, gprop, bprop);
+//   colorList.push(color);
+// }
+
+
 
 // RENDER LINES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
 var parent = new THREE.Object3D();
-for (i=0; i<8; i++) {
-  fieldList[i].renderPath(parent);
+for (var i=0; i<8; i++) {
+  var zOffset = (i-4) / 10;
+  fieldList[i].renderPath(parent, new THREE.Color(colorList[i]), zOffset);
 }
 
-// WHY does this work and not the above loop?
-fieldList[0].renderPath(parent);
-fieldList[1].renderPath(parent);
-fieldList[2].renderPath(parent);
-fieldList[3].renderPath(parent);
-fieldList[4].renderPath(parent);
-fieldList[5].renderPath(parent);
-fieldList[6].renderPath(parent);
-fieldList[7].renderPath(parent);
 
 scene.add(parent);
 
