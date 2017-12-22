@@ -154,6 +154,10 @@ function onMouseMove( event ) {
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 }
 
+var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+var sphere = new THREE.Mesh( geometry, material );
+scene.add( sphere );
 var changed = []
 
 function render() {
@@ -173,6 +177,9 @@ function render() {
 	for ( var i = 0; i < intersects.length; i++ ) {
 
 		intersects[ i ].object.material.linewidth = 6;
+    console.log(sphere.position.z);
+    console.log(i);
+    sphere.position.copy(intersects[ i ].point);
     changed.push(intersects[i]);
 
 	}
