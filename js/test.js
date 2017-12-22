@@ -145,10 +145,7 @@ function animate() {
 // RAYCASTER ------------------------------------------------------------------
 
 var raycaster = new THREE.Raycaster();
-<<<<<<< HEAD
 console.log(raycaster.linePrecision);
-=======
->>>>>>> origin/master
 raycaster.linePrecision = 0.05;
 var mouse = new THREE.Vector2();
 function onMouseMove( event ) {
@@ -168,10 +165,7 @@ function render() {
 	var intersects = raycaster.intersectObjects( scene.children );
 
  for(i = 0; i<changed.length;i++) {
-    if(changed[i] in intersects) {
-      alert("yes");
-    }
-    else {
+    if (!(changed[i] in intersects)) {
       changed[i].object.material.linewidth = 3;
       changed.splice(i, 1);
     }
@@ -182,11 +176,6 @@ function render() {
     changed.push(intersects[i]);
 
 	}
-
-
-
-
-
 
 	renderer.render( scene, camera );
 
