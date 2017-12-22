@@ -26,11 +26,12 @@ var colorCenterLine = "0x444444"
 var colorGrid = "0x000000"
 
 var gridHelper = new THREE.GridHelper( size, divisions, "red", "gainsboro");
-//scene.add( gridHelper );
+scene.add( gridHelper );
 
 
 // VISUAL FIELD PATH CONSTRUCTOR ---------------------------------------------
-function FieldPath (yPoints, zPoints) {
+function FieldPath (name, yPoints, zPoints) {
+  this.name = name;
   this.xPoints = [];       // anterior-posterior
   this.yPoints = yPoints;  // superior-inferior
   this.zPoints = zPoints; //lateral-medial
@@ -108,15 +109,15 @@ var yLL = yRL;
 var zLL = [4, 6, 5, 5, 5, 5, 2];
 
 // Create visual field objects
-var vRRU = new FieldPath (yRU, zRU);
-var vRRL = new FieldPath (yRL, zRL);
-var vRLU = new FieldPath (yLU, zLU);
-var vRLL = new FieldPath (yLL, zLL);
+var vRRU = new FieldPath ("RRU", yRU, zRU);
+var vRRL = new FieldPath ("RRL", yRL, zRL);
+var vRLU = new FieldPath ("RLU", yLU, zLU);
+var vRLL = new FieldPath ("RLL", yLL, zLL);
 // Need to check if this can be done in a more simple way
-var vLRU = new FieldPath (yRU, zRU);
-var vLRL = new FieldPath (yRL, zRL);
-var vLLU = new FieldPath (yLU, zLU);
-var vLLL = new FieldPath (yLL, zLL);
+var vLRU = new FieldPath ("LRU", yRU, zRU);
+var vLRL = new FieldPath ("LRL", yRL, zRL);
+var vLLU = new FieldPath ("LLU", yLU, zLU);
+var vLLL = new FieldPath ("LLL", yLL, zLL);
 // Objects apparently passed by reference so this should work...
 var switchList = [vLLU, vLLL, vLRU, vLRL];
 for (var i=0; i<switchList.length; i++) {
@@ -199,18 +200,29 @@ function render() {
 
 // EVENT LISTENERS
 window.addEventListener( 'mousemove', onMouseMove, false);
-window.addEventListener( 'click', onClick, false);
+window.addEventListener( 'dblclick', onDblClick, false);
 //TODO Event Listener of window resize...
 
 
-// ON CLICK LISTENER
+// ON RIGHT CLICK CLICK LISTENER
 var sph_geometry = new THREE.SphereGeometry(0.5, 32, 32);
 var sph_material = new THREE.MeshBasicMaterial( {color:0xff0000});
 var selectSphere = new THREE.Mesh( sph_geometry, sph_material );
 selectSphere.visible = false;
 scene.add(selectSphere);
 var selectLines = []
-function onClick( event ) {
+function onDblClick( event ) {
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  // Reset lights
+  for (var i = 0; i<selectLines.length; i++) {
+    obj = selectLines.pop()
+    obj.material.visible= true;
+    obj.material.needsUpdate = true;
+  }
+
   if (sphere.visible == true) {
     selectSphere.position.copy(sphere.position);
     selectSphere.visible=true;
@@ -218,12 +230,14 @@ function onClick( event ) {
     for (var i = 0; i<changed.length; i++) {
       changed[i].object.material.visible = false;
       changed[i].object.material.needsUpdate = true;
+      selectLines.push(changed[i].object);
     }
 
   } else {
-    //selectSphere.position.copy(new THREE.Vector3(0,0,0));
-    //selectSphere.visible = false;
+    selectSphere.position.copy(new THREE.Vector3(0,0,0));
+    selectSphere.visible = false;
   }
+
 }
 
 
