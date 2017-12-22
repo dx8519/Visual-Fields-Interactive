@@ -2,6 +2,9 @@
 
 // General three.js setup
 
+
+// INITIALISATION ------------------------------------------------------------
+
 var scene = new THREE.Scene();
 
 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
@@ -13,12 +16,20 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setClearColor( 0xffffff, 0 );
 document.body.appendChild( renderer.domElement );
 
-// Figure this out
 var controls = new THREE.OrbitControls( camera );
 controls.update();
 
+// ADD GRID
+var size = 100;
+var divisions = 100;
+var colorCenterLine = "0x444444"
+var colorGrid = "0x000000"
 
-// VISUAL FIELD PATH CONSTRUCTOR
+var gridHelper = new THREE.GridHelper( size, divisions, "red", "gainsboro");
+//scene.add( gridHelper );
+
+
+// VISUAL FIELD PATH CONSTRUCTOR ---------------------------------------------
 function FieldPath (yPoints, zPoints) {
   this.xPoints = [];       // anterior-posterior
   this.yPoints = yPoints;  // superior-inferior
@@ -52,7 +63,7 @@ function FieldPath (yPoints, zPoints) {
     var zPointsOffset = this.zPoints.map(n => n + zOffset);
     var material = new THREE.LineBasicMaterial({
       color: color,
-      linewidth: 3,
+      linewidth: 1,
       linecap: "round",
       linejoin: "round",
     });
@@ -70,7 +81,7 @@ function FieldPath (yPoints, zPoints) {
 }
 
 
-
+// CREATE VISUAL FIELD PATHS ------------------------------------------------
 // Initialise generic paths
 var yRU = [1, -1, 0, 0, 0, -4, 0];
 var zRU = [6, 4, 5, 0, -5, -5, -2];
@@ -105,42 +116,19 @@ var colorList = [];
 colorList.push("lightgreen", "lightseagreen", "lightskyblue", "mediumpurple");
 colorList.push("lightsalmon", "crimson", "sienna", "hotpink");
 // TODO: Figure out a good way to get colors automatically
-// for (var i=0; i<8; i++) {
-//   var rprop = 0.1 + (i%2);
-//   var gprop = 0.1 + (Math.floor(i/4));
-//   var bprop = 0.1 + (Math.floor((i/2)%2));
-//   var sum = 2 * (rprop + gprop + bprop);
-//   rprop = (rprop/sum);
-//   gprop = (gprop/sum);
-//   bprop = (bprop/sum);
-//   var color = new THREE.Color(rprop, gprop, bprop);
-//   colorList.push(color);
-// }
-
-
 
 // RENDER LINES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
 var parent = new THREE.Object3D();
 for (var i=0; i<8; i++) {
   var zOffset = (i-4) / 10;
-  fieldList[i].renderPath(parent, new THREE.Color(colorList[i]), zOffset);
+  fieldList[i].renderPath(scene, new THREE.Color(colorList[i]), zOffset);
 }
 
+//scene.add(parent);
 
-scene.add(parent);
 
-
-// ADD GRID
-var size = 100;
-var divisions = 100;
-var colorCenterLine = "0x444444"
-var colorGrid = "0x000000"
-
-var gridHelper = new THREE.GridHelper( size, divisions, "red", "gainsboro");
-scene.add( gridHelper );
-
-// RENDER AND ANIMATE
+// RENDER AND ANIMATE ----------------------------------------------------------
 function animate() {
 
   requestAnimationFrame( animate );
@@ -148,8 +136,56 @@ function animate() {
   // required if controls.enableDamping or controls.autoRotate are set to true
   controls.update();
 
-  renderer.render( scene, camera );
+  render( scene, camera );
 
 }
 
-animate();
+//animate();
+
+// RAYCASTER ------------------------------------------------------------------
+
+var raycaster = new THREE.Raycaster();
+console.log(raycaster.linePrecision);
+raycaster.linePrecision = 1;
+var mouse = new THREE.Vector2();
+function onMouseMove( event ) {
+  event.preventDefault();
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
+
+function render() {
+
+	// update the picking ray with the camera and mouse position
+	raycaster.setFromCamera( mouse, camera );
+
+	// calculate objects intersecting the picking ray
+	var intersects = raycaster.intersectObjects( scene.children );
+
+	for ( var i = 0; i < intersects.length; i++ ) {
+
+		intersects[ i ].object.material.color.set( 0xff0000 );
+
+	}
+
+	renderer.render( scene, camera );
+
+}
+
+// function animate() {
+//   requestAnimationFrame( animate );
+//   render();
+// }
+
+animate()
+
+//window.requestAnimationFrame(render);
+window.addEventListener( 'mousemove', onMouseMove, false);
+
+
+
+
+
+
+
