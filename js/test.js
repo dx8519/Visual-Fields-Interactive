@@ -40,6 +40,12 @@ function FieldPath (yPoints, zPoints) {
   this.numPoints = yPoints.length
   this.switchSide = switchSide;
   this.renderPath = renderPath;
+  this.material = new THREE.LineBasicMaterial({
+      linewidth: 3,
+      linecap: "round",
+      linejoin: "round",
+  });
+  this.changeToDash = changeToDash;
 
   // Initialise xPoints with integers from 0 to numLength
   for (var i=0; i<this.numPoints; i++) {
@@ -60,13 +66,8 @@ function FieldPath (yPoints, zPoints) {
 
   function renderPath(parent, color, zOffset) {
     // zOffset to show all lines without superimposition
+    this.material.color.set(color)
     var zPointsOffset = this.zPoints.map(n => n + zOffset);
-    var material = new THREE.LineBasicMaterial({
-      color: color,
-      linewidth: 3,
-      linecap: "round",
-      linejoin: "round",
-    });
     var geometry = new THREE.Geometry();
     for (var i=0; i<this.numPoints; i++) {
       var xc = this.xPoints[i];
@@ -75,9 +76,20 @@ function FieldPath (yPoints, zPoints) {
       geometry.vertices.push(new THREE.Vector3(xc, yc, zc));
     }
     geometry.computeLineDistances();
-    var line = new THREE.Line(geometry, material);
+    var line = new THREE.Line(geometry, this.material);
     parent.add(line);
   }
+
+  function changeToDash() {
+    this.material = new THREE.LineDashedMaterial({
+      linewidth: 2,
+      linecap: "round",
+      linejoin: "round",
+      dashSize: 0.2,
+      gapSize: 0.05,
+    })
+  }
+
 }
 
 
@@ -117,27 +129,37 @@ colorList.push("lightgreen", "lightseagreen", "lightskyblue", "mediumpurple");
 colorList.push("lightsalmon", "crimson", "sienna", "hotpink");
 // TODO: Figure out a good way to get colors automatically
 
-// RENDER LINES
+// RENDER LINES BASES
 var fieldList = [vRRU, vRRL, vRLU, vRLL].concat(switchList);
 parent = new THREE.Object3D();
 for (var i=0; i<8; i++) {
-  var zOffset = (i-4) / 10;
+  var zOffset = (i-4) / 20;
   fieldList[i].renderPath(parent, new THREE.Color(colorList[i]), zOffset);
 }
 scene.add(parent);
 
+// RENDER LINE Lights
+lights = new THREE.Object3D();
+for (var i=0; i<8; i++) {
+  var zOffset = (i-4) / 20;
+  fieldList[i].changeToDash();
+  fieldList[i].renderPath(lights, new THREE.Color("yellow"), zOffset);
+}
+scene.add(lights);
+
 // RAYCASTER ------------------------------------------------------------------
 
 var raycaster = new THREE.Raycaster();
-raycaster.linePrecision = 0.05;
+raycaster.linePrecision = 0.2;
 var mouse = new THREE.Vector2();
+
 function onMouseMove( event ) {
   event.preventDefault();
 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 }
 
-var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+var geometry = new THREE.SphereGeometry( 0.5, 32, 32 );
 var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
 var sphere = new THREE.Mesh( geometry, material );
 sphere.visible=false;
@@ -150,11 +172,11 @@ function render() {
 	raycaster.setFromCamera( mouse, camera );
 
 	// calculate objects intersecting the picking ray
-	var intersects = raycaster.intersectObjects( parent.children );
+	var intersects = raycaster.intersectObjects( lights.children );
 
  for(i = 0; i<changed.length;i++) {
     if (!(changed[i] in intersects)) {
-      changed[i].object.material.linewidth = 3;
+      changed[i].object.material.linewidth = 2
       changed.splice(i, 1);
     }
   }
@@ -178,18 +200,30 @@ function render() {
 // EVENT LISTENERS
 window.addEventListener( 'mousemove', onMouseMove, false);
 window.addEventListener( 'click', onClick, false);
+//TODO Event Listener of window resize...
 
+
+// ON CLICK LISTENER
+var sph_geometry = new THREE.SphereGeometry(0.5, 32, 32);
+var sph_material = new THREE.MeshBasicMaterial( {color:0xff0000});
+var selectSphere = new THREE.Mesh( sph_geometry, sph_material );
+selectSphere.visible = false;
+scene.add(selectSphere);
 var selectLines = []
 function onClick( event ) {
-  if (sphere.visible = true) {
-    selectLines = changed;
-    var sph_geometry = new THREE.SphereGeometry(1, 32, 32);
-    var sph_material = new THREE.MeshBasicMaterial( {color:0xffff00});
-    var selectSphere = new THREE.Mesh( geometry, material );
+  if (sphere.visible == true) {
     selectSphere.position.copy(sphere.position);
-    scene.add(selectSphere);
-  }
+    selectSphere.visible=true;
 
+    for (var i = 0; i<changed.length; i++) {
+      changed[i].object.material.visible = false;
+      changed[i].object.material.needsUpdate = true;
+    }
+
+  } else {
+    //selectSphere.position.copy(new THREE.Vector3(0,0,0));
+    //selectSphere.visible = false;
+  }
 }
 
 
