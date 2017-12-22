@@ -146,7 +146,7 @@ function animate() {
 
 var raycaster = new THREE.Raycaster();
 console.log(raycaster.linePrecision);
-raycaster.linePrecision = 1;
+raycaster.linePrecision = 0.05;
 var mouse = new THREE.Vector2();
 function onMouseMove( event ) {
   event.preventDefault();
@@ -154,6 +154,7 @@ function onMouseMove( event ) {
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 }
 
+var changed = []
 
 function render() {
 
@@ -163,11 +164,26 @@ function render() {
 	// calculate objects intersecting the picking ray
 	var intersects = raycaster.intersectObjects( scene.children );
 
+ for(i = 0; i<changed.length;i++) {
+    if(changed[i] in intersects) {
+      alert("yes");
+    }
+    else {
+      changed[i].object.material.linewidth = 3;
+      changed.splice(i, 1);
+    }
+  }
 	for ( var i = 0; i < intersects.length; i++ ) {
 
-		intersects[ i ].object.material.color.set( 0xff0000 );
+		intersects[ i ].object.material.linewidth = 6;
+    changed.push(intersects[i]);
 
 	}
+
+
+
+
+
 
 	renderer.render( scene, camera );
 
