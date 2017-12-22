@@ -64,18 +64,17 @@ function FieldPath (yPoints, zPoints) {
 
 
 // Initialise generic paths
-// TODO: Change field path to y dimension for first value
-var yRU = [0, 0, 0, 0, 0, 4, 0];
-var zRU = [8, 4, 5, 0, -5, -5, -2];
+var yRU = [1, -1, 0, 0, 0, 4, 0];
+var zRU = [6, 4, 5, 0, -5, -5, -2];
 
-var yRL = yRU.map(n => n * (-1));
-var zRL = [6, 2, 5, 0, -5, -5, -2];
+var yRL = [-1, 1, 0, 0, 0, 4, 0];
+var zRL = [6, 4, 5, 0, -5, -5, -2];
 
 var yLU = yRU;
-var zLU = [4, 8, 5, 5, 5, 5, 2];
+var zLU = [4, 6, 5, 5, 5, 5, 2];
 
 var yLL = yRL;
-var zLL = [2, 6, 5, 5, 5, 5, 2];
+var zLL = [4, 6, 5, 5, 5, 5, 2];
 
 // Create visual field objects
 var vRRU = new FieldPath (yRU, zRU);
