@@ -230,6 +230,9 @@ function onDblClick( event ) {
     for (var i = 0; i<changed.length; i++) {
       changed[i].object.material.visible = false;
       changed[i].object.material.needsUpdate = true;
+      var outCoord = changed[i].object.geometry.vertices[0];
+      outCoord.x = outCoord.x - 3 //calibrate to output coordinate
+      // Might do this with a base plane and light planes later
       selectLines.push(changed[i].object);
     }
 
