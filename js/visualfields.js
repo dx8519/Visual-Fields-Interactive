@@ -333,7 +333,7 @@ var labels = {
   "retina": [4, 0, -5],
   "optic nerve": [6, 0, -5],
   "optic chiasm": [10, 0, 0],
-  "optic radiation": [14, 0, -5],
+  "optic tract": [14, 0, -5],
   "baum's loop": [18, 4, -5],
   "meyer's loop": [18, -4, -5],
   "visual cortex": [20, 0, -2]
